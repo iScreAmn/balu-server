@@ -24,7 +24,6 @@ export const sendCalculatorTelegramNotification = async (data) => {
     `<b>Контакт:</b> ${escapeHtml(data.contactValue || "—")}`,
     ``,
     `<b>Отправлено:</b> ${escapeHtml(data.submitted_at)}`,
-    ...(data.ip ? [`<b>IP:</b> ${escapeHtml(data.ip)}`] : []),
   ]);
 
   return sendTelegramMessage(html);
@@ -41,7 +40,6 @@ export const sendCallbackTelegramNotification = async (data) => {
     `<b>Согласие на обработку данных:</b> ${data.agree ? "Да" : "Нет"}`,
     ``,
     `<b>Отправлено:</b> ${escapeHtml(data.submitted_at)}`,
-    ...(data.ip ? [`<b>IP:</b> ${escapeHtml(data.ip)}`] : []),
   ]);
 
   return sendTelegramMessage(html);
