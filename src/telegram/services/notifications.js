@@ -29,13 +29,17 @@ export const sendCalculatorTelegramNotification = async (data) => {
   return sendTelegramMessage(html);
 };
 
-/** Заявка «Заказать звонок» с сайта Балу */
+/** Заявка с сайта Балу */
 export const sendCallbackTelegramNotification = async (data) => {
+  const contactLabel = data.method || "Телефон";
+  const contactValue = data.contact || data.phone || "—";
+
   const html = linesToHtml([
-    `<b>Заказ звонка с сайта «Балу»</b>`,
+    `<b>Заявка с сайта «Балу»</b>`,
     ``,
     `<b>Имя:</b> ${escapeHtml(data.name)}`,
-    `<b>Телефон:</b> ${escapeHtml(data.phone)}`,
+    `<b>Способ связи:</b> ${escapeHtml(contactLabel)}`,
+    `<b>Контакт:</b> ${escapeHtml(contactValue)}`,
     `<b>Сообщение:</b> ${escapeHtml(data.message || "—")}`,
     `<b>Согласие на обработку данных:</b> ${data.agree ? "Да" : "Нет"}`,
     ``,

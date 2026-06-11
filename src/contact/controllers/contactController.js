@@ -23,9 +23,11 @@ const normalizePhone = (phone) => {
   return cleaned;
 };
 
+const isPhoneMethod = (method) => !method || /тел|phone|whats/i.test(method);
+
 export const submitContact = async (req, res) => {
   try {
-    const { name, phone, message, agree, _company } = req.body;
+    const { name, phone, message, agree, _company, contactMethod, contactValue } = req.body;
 
     if (typeof _company === "string" && _company.trim()) {
       return res.status(200).json({
@@ -43,11 +45,16 @@ export const submitContact = async (req, res) => {
       });
     }
 
-    if (!name || !phone) {
+    // Поддерживаем как новый формат (способ связи + контакт),
+    // так и устаревший (только телефон).
+    const method = typeof contactMethod === "string" ? contactMethod.trim() : "";
+    const rawContact = String(contactValue ?? phone ?? "").trim();
+
+    if (!name || !rawContact) {
       return res.status(400).json({
         success: false,
         message: "Missing required fields",
-        required: ["name", "phone"],
+        required: ["name", method ? "contactValue" : "phone"],
       });
     }
 
@@ -58,17 +65,24 @@ export const submitContact = async (req, res) => {
       });
     }
 
-    const normalizedPhone = normalizePhone(phone);
-    if (!phoneRegex.test(normalizedPhone)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid phone format. Expected 7-15 digits (optionally with +).",
-      });
+    // Телефон валидируем по формату только для звонка/WhatsApp.
+    let contactDisplay = rawContact;
+    if (isPhoneMethod(method)) {
+      const normalizedPhone = normalizePhone(rawContact);
+      if (!phoneRegex.test(normalizedPhone)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid phone format. Expected 7-15 digits (optionally with +).",
+        });
+      }
+      contactDisplay = normalizedPhone;
     }
 
     const payload = {
       name: String(name).trim(),
-      phone: normalizedPhone,
+      method: method || "Телефон",
+      contact: contactDisplay,
+      phone: isPhoneMethod(method) ? contactDisplay : "",
       message: typeof message === "string" ? message.trim() : "",
       agree: true,
       submitted_at: new Date().toLocaleString("ru-RU", {
@@ -96,7 +110,8 @@ export const submitContact = async (req, res) => {
 
     console.log("Callback submission ok:", {
       name: payload.name,
-      phone: payload.phone,
+      method: payload.method,
+      contact: payload.contact,
       timestamp: payload.submitted_at,
     });
 
