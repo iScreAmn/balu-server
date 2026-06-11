@@ -18,19 +18,25 @@ import {
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3002;
+const DEFAULT_ALLOWED_ORIGINS = ["https://balu-balkon.vercel.app"];
+const normalizeOrigin = (value) => String(value || "").trim().replace(/\/$/, "");
 
-const allowedOrigins = (process.env.ALLOWED_ORIGINS || "")
-  .split(",")
-  .map((o) => o.trim())
-  .filter(Boolean);
+const allowedOrigins = Array.from(
+  new Set(
+    [...DEFAULT_ALLOWED_ORIGINS, ...(process.env.ALLOWED_ORIGINS || "").split(",")]
+      .map(normalizeOrigin)
+      .filter(Boolean)
+  )
+);
 
 app.use(
   cors({
     origin: (origin, callback) => {
       const whitelist = allowedOrigins.length ? allowedOrigins : [];
       if (!origin) return callback(null, true);
+      const normalizedOrigin = normalizeOrigin(origin);
       const isLocal = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin);
-      if (whitelist.includes(origin) || isLocal) {
+      if (whitelist.includes(normalizedOrigin) || isLocal) {
         return callback(null, true);
       }
       return callback(new Error(`Not allowed by CORS: ${origin}`));
