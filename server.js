@@ -18,7 +18,7 @@ import {
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3002;
-const DEFAULT_ALLOWED_ORIGINS = ["https://balu-balkon.vercel.app"];
+const DEFAULT_ALLOWED_ORIGINS = ["https://balu-balkon.vercel.app", "https://balu-balkon.ru"];
 const normalizeOrigin = (value) => String(value || "").trim().replace(/\/$/, "");
 
 const allowedOrigins = Array.from(
